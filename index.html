@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>NDA Review</title>
+<style>
+:root{
+  --bg-primary:#ffffff;--bg-secondary:#f5f5f3;--bg-tertiary:#eeede9;
+  --bg-success:#eaf3de;--bg-danger:#fcebeb;--bg-warning:#faeeda;--bg-info:#e6f1fb;
+  --text-primary:#1a1a18;--text-secondary:#5f5e5a;--text-tertiary:#888780;
+  --text-success:#27500a;--text-danger:#791f1f;--text-warning:#633806;--text-info:#0c447c;
+  --border-t:rgba(0,0,0,0.12);--border-s:rgba(0,0,0,0.22);--border-p:rgba(0,0,0,0.32);
+  --border-success:rgba(39,80,10,0.3);--border-danger:rgba(121,31,31,0.3);
+  --radius-md:8px;--radius-lg:12px;
+  --font-sans:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --font-mono:'SF Mono','Fira Code',monospace;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg-primary:#1e1e1c;--bg-secondary:#252523;--bg-tertiary:#1a1a18;
+  --bg-success:#173404;--bg-danger:#501313;--bg-warning:#412402;--bg-info:#042c53;
+  --text-primary:#f0efe9;--text-secondary:#b4b2a9;--text-tertiary:#888780;
+  --text-success:#c0dd97;--text-danger:#f09595;--text-warning:#fac775;--text-info:#b5d4f4;
+  --border-t:rgba(255,255,255,0.1);--border-s:rgba(255,255,255,0.18);--border-p:rgba(255,255,255,0.28);
+  --border-success:rgba(192,221,151,0.25);--border-danger:rgba(240,149,149,0.25);
+}}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);background:var(--bg-tertiary);color:var(--text-primary);min-height:100vh;padding:1.5rem}
+.app{max-width:860px;margin:0 auto;background:var(--bg-tertiary);border-radius:var(--radius-lg)}
+.screen{display:none}
+.screen.active{display:block}
+.topbar{display:flex;align-items:center;gap:10px;margin-bottom:1.5rem}
+.logo{font-size:15px;font-weight:500;color:var(--text-primary)}
+.logo span{color:#7F77DD}
+.badge{font-size:11px;padding:3px 10px;border-radius:20px;background:var(--bg-secondary);color:var(--text-secondary);border:0.5px solid var(--border-t)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--radius-md);font-size:13px;font-weight:500;cursor:pointer;border:0.5px solid var(--border-s);background:transparent;color:var(--text-primary);transition:background .15s;font-family:var(--font-sans)}
+.btn:hover{background:var(--bg-secondary)}
+.btn:disabled{opacity:.4;cursor:default}
+.btn-primary{background:#534AB7;color:#EEEDFE;border-color:#534AB7}
+.btn-primary:hover{background:#3C3489;border-color:#3C3489}
+.btn-danger{background:var(--bg-danger);color:var(--text-danger);border-color:var(--border-danger)}
+.btn-success{background:var(--bg-success);color:var(--text-success);border-color:var(--border-success)}
+.card{background:var(--bg-primary);border:0.5px solid var(--border-t);border-radius:var(--radius-lg);padding:1.5rem}
+.section-label{font-size:11px;font-weight:500;color:var(--text-secondary);letter-spacing:.05em;margin-bottom:8px}
+
+.upload-zone{border:1.5px dashed var(--border-s);border-radius:var(--radius-lg);padding:3rem 2rem;display:flex;flex-direction:column;align-items:center;gap:12px;cursor:pointer;transition:border-color .2s,background .2s}
+.upload-zone:hover{border-color:#7F77DD;background:rgba(83,74,183,.05)}
+.upload-icon{width:44px;height:44px;border-radius:50%;background:#EEEDFE;display:flex;align-items:center;justify-content:center}
+.upload-icon svg{width:20px;height:20px;stroke:#534AB7;fill:none}
+
+.thinking-wrap{display:flex;flex-direction:column;align-items:center;gap:1.5rem;padding:2rem 0}
+.pulse-ring{width:60px;height:60px;border-radius:50%;border:2px solid #AFA9EC;display:flex;align-items:center;justify-content:center;animation:pulse 1.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.08);opacity:.7}}
+.progress-bar{width:100%;height:4px;background:var(--bg-secondary);border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;background:#7F77DD;border-radius:4px;animation:fill 2.5s ease forwards}
+@keyframes fill{0%{width:0}100%{width:82%}}
+.step-list{display:flex;flex-direction:column;gap:8px;width:100%}
+.step-item{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-secondary)}
+.step-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.step-done .step-dot{background:#1D9E75}
+.step-active .step-dot{background:#7F77DD;animation:blink 1s ease infinite}
+.step-wait .step-dot{background:var(--border-s)}
+.step-done{color:var(--text-primary)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+
+.summary-bar{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:1.25rem}
+.stat-card{background:var(--bg-secondary);border-radius:var(--radius-md);padding:10px;text-align:center}
+.stat-n{font-size:20px;font-weight:500}
+.stat-l{font-size:11px;color:var(--text-secondary);margin-top:2px}
+
+.severity{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500;white-space:nowrap;flex-shrink:0}
+.sev-high{background:#FCEBEB;color:#A32D2D}
+.sev-med{background:#FAEEDA;color:#854F0B}
+.sev-low{background:#EAF3DE;color:#3B6D11}
+.sev-info{background:#E6F1FB;color:#185FA5}
+
+.flag-row{border:0.5px solid var(--border-t);border-radius:var(--radius-md);margin-bottom:6px;overflow:hidden;background:var(--bg-primary);transition:border-color .15s}
+.flag-row:hover{border-color:var(--border-s)}
+.flag-row.approved{border-left:3px solid #1D9E75}
+.flag-row.rejected{border-left:3px solid #E24B4A;opacity:.55}
+.flag-summary{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;user-select:none}
+.flag-chevron{width:16px;height:16px;flex-shrink:0;transition:transform .2s;stroke:var(--text-secondary);fill:none}
+.flag-row.open .flag-chevron{transform:rotate(90deg)}
+.flag-title{font-size:13px;font-weight:500;color:var(--text-primary);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.flag-clause{font-size:11px;color:var(--text-secondary);flex-shrink:0}
+.flag-status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;background:var(--border-s)}
+.flag-row.approved .flag-status-dot{background:#1D9E75}
+.flag-row.rejected .flag-status-dot{background:#E24B4A}
+.flag-body{display:none;border-top:0.5px solid var(--border-t)}
+.flag-row.open .flag-body{display:block}
+.flag-inner{display:grid;grid-template-columns:minmax(0,1fr) 220px}
+@media(max-width:600px){.flag-inner{grid-template-columns:1fr}}
+.flag-detail{padding:14px 16px}
+.flag-desc{font-size:13px;color:var(--text-secondary);line-height:1.55;margin-bottom:12px}
+.flag-diff{font-size:12px;background:var(--bg-secondary);border-radius:var(--radius-md);padding:8px 12px;font-family:var(--font-mono);line-height:1.7;margin-bottom:12px}
+.diff-add{color:#1D9E75}
+.diff-rem{color:#E24B4A}
+.flag-actions{display:flex;gap:6px;flex-wrap:wrap}
+.flag-actions .btn{padding:5px 11px;font-size:12px}
+.doc-preview{border-left:0.5px solid var(--border-t);padding:14px 12px;background:var(--bg-secondary)}
+@media(max-width:600px){.doc-preview{border-left:none;border-top:0.5px solid var(--border-t)}}
+.preview-label{font-size:11px;color:var(--text-secondary);margin-bottom:10px;font-weight:500}
+.doc-page{background:var(--bg-primary);border:0.5px solid var(--border-t);border-radius:4px;padding:10px;font-size:9.5px;font-family:var(--font-mono);line-height:1.6;color:var(--text-secondary);min-height:140px}
+.doc-line{padding:1px 0}
+.doc-line.highlight-rem{background:#FCEBEB;color:#A32D2D;border-radius:2px;padding:1px 4px;margin:0 -4px}
+.doc-line.highlight-add{background:#EAF3DE;color:#27500a;border-radius:2px;padding:1px 4px;margin:0 -4px}
+.doc-line.dim{opacity:.4}
+.doc-line.section-head{color:var(--text-primary);font-weight:500;opacity:1}
+.preview-page-num{font-size:10px;color:var(--text-secondary);text-align:center;margin-top:6px}
+.action-footer{display:flex;gap:8px;margin-top:1.25rem;padding-top:1.25rem;border-top:0.5px solid var(--border-t);flex-wrap:wrap}
+.nav-tabs{display:flex;gap:6px;margin-bottom:1.5rem}
+.avatar{width:28px;height:28px;border-radius:50%;background:#EEEDFE;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:#534AB7;flex-shrink:0}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="logo">nda<span>review</span></div>
+    <div class="badge">Beta</div>
+    <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+      <button class="btn" style="font-size:12px" onclick="showScreen('s1')">Upload</button>
+      <button class="btn" style="font-size:12px" onclick="showScreen('s1b')">Analyzing</button>
+      <button class="btn btn-primary" style="font-size:12px" onclick="showScreen('s2')">Review flags</button>
+      <div class="avatar">JR</div>
+    </div>
+  </div>
+
+  <div id="s1" class="screen active">
+    <div class="card" style="max-width:520px;margin:0 auto">
+      <p style="font-size:17px;font-weight:500;margin-bottom:4px">New document review</p>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:1.5rem">Upload an NDA or DA to compare against your standard template.</p>
+      <div style="margin-bottom:1.25rem">
+        <p class="section-label">Comparison baseline</p>
+        <div style="display:flex;gap:8px">
+          <button class="btn" style="flex:1;justify-content:center;border-color:#7F77DD;color:#534AB7;background:#EEEDFE">Standard NDA v2.1</button>
+          <button class="btn" style="flex:1;justify-content:center">Custom template</button>
+        </div>
+      </div>
+      <div class="upload-zone" onclick="startThinking()">
+        <div class="upload-icon"><svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <p style="font-size:14px;font-weight:500">Drop your PDF here</p>
+        <p style="font-size:12px;color:var(--text-secondary)">or click to browse — PDF only, max 20 MB</p>
+      </div>
+      <p style="font-size:12px;color:var(--text-secondary);margin-top:12px;text-align:center">Files are processed securely and not stored after review.</p>
+    </div>
+  </div>
+
+  <div id="s1b" class="screen">
+    <div class="card" style="max-width:440px;margin:0 auto">
+      <div class="thinking-wrap">
+        <div class="pulse-ring"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#534AB7" stroke-width="1.5"><path d="M9 12h6m-3-3v6M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z" stroke-linecap="round"/></svg></div>
+        <div style="width:100%">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+            <p style="font-size:13px;color:var(--text-secondary)">Acme_NDA_draft.pdf</p>
+            <p style="font-size:13px;color:#7F77DD">Analyzing…</p>
+          </div>
+          <div class="progress-bar"><div class="progress-fill"></div></div>
+        </div>
+        <div class="step-list">
+          <div class="step-item step-done"><div class="step-dot"></div>Document parsed — 14 clauses detected</div>
+          <div class="step-item step-done"><div class="step-dot"></div>Loaded baseline: Standard NDA v2.1</div>
+          <div class="step-item step-active"><div class="step-dot"></div>Comparing clause structure and language…</div>
+          <div class="step-item step-wait"><div class="step-dot"></div>Generating risk flags</div>
+          <div class="step-item step-wait"><div class="step-dot"></div>Preparing review summary</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="s2" class="screen">
+    <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:1.25rem;flex-wrap:wrap">
+      <div>
+        <p style="font-size:17px;font-weight:500">Acme_NDA_draft.pdf</p>
+        <p style="font-size:12px;color:var(--text-secondary)">vs. Standard NDA v2.1 · 7 deltas found</p>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn" style="font-size:12px">Export PDF</button>
+      </div>
+    </div>
+    <div class="summary-bar">
+      <div class="stat-card"><div class="stat-n" style="color:#A32D2D" id="cnt-high">2</div><div class="stat-l">High risk</div></div>
+      <div class="stat-card"><div class="stat-n" style="color:#854F0B" id="cnt-med">3</div><div class="stat-l">Medium</div></div>
+      <div class="stat-card"><div class="stat-n" style="color:#3B6D11" id="cnt-low">2</div><div class="stat-l">Low / info</div></div>
+      <div class="stat-card"><div class="stat-n" id="cnt-pend">7</div><div class="stat-l">Pending</div></div>
+    </div>
+    <div id="flags"></div>
+    <div class="action-footer">
+      <button class="btn btn-success" onclick="bulkAct('approved')">Approve all remaining</button>
+      <button class="btn btn-danger" onclick="bulkAct('rejected')">Reject all remaining</button>
+      <div style="flex:1"></div>
+      <button class="btn" style="border-color:#534AB7;color:#534AB7">Send for legal review</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const FLAGS=[
+  {id:'f1',sev:'high',sevLabel:'High risk',clause:'§ 8.2',title:'Unlimited liability clause added',
+   desc:'The counterparty removed the liability cap of $500,000 and replaced it with unlimited liability exposure for both parties.',
+   rem:'Liability shall not exceed $500,000 in aggregate.',add:'Liability shall be unlimited for any breach of this agreement.',page:8,
+   docLines:[{t:'§ 8. LIMITATION OF LIABILITY',c:'section-head'},{t:'8.1  Neither party shall be liable for',c:'dim'},{t:'     indirect or consequential damages.',c:'dim'},{t:'8.2  [ORIGINAL]',c:'dim'},{t:'- Liability shall not exceed $500,000',c:'highlight-rem'},{t:'+ Liability shall be unlimited for',c:'highlight-add'},{t:'+ any breach of this agreement.',c:'highlight-add'},{t:'8.3  Indemnification obligations',c:'dim'},{t:'     survive termination.',c:'dim'}]},
+  {id:'f2',sev:'high',sevLabel:'High risk',clause:'§ 3.1',title:'Confidentiality term extended to perpetuity',
+   desc:"Original term was 3 years post-disclosure. Counterparty's draft removes the time limit, making obligations permanent.",
+   rem:'Obligations expire three (3) years after the Disclosure Date.',add:'Obligations shall survive indefinitely and shall not expire.',page:3,
+   docLines:[{t:'§ 3. TERM OF CONFIDENTIALITY',c:'section-head'},{t:'3.1  Duration of obligations:',c:'dim'},{t:'',c:'dim'},{t:'- Obligations expire three (3) years',c:'highlight-rem'},{t:'- after the Disclosure Date.',c:'highlight-rem'},{t:'+ Obligations shall survive indefinitely',c:'highlight-add'},{t:'+ and shall not expire.',c:'highlight-add'},{t:'',c:'dim'},{t:'3.2  Upon expiry, Recipient may…',c:'dim'}]},
+  {id:'f3',sev:'med',sevLabel:'Medium risk',clause:'§ 12.1',title:'Governing law changed to foreign jurisdiction',
+   desc:'Jurisdiction changed from Delaware, USA to England and Wales. This may increase litigation costs and complexity.',
+   rem:'Governed by the laws of the State of Delaware, USA.',add:'Governed by the laws of England and Wales.',page:12,
+   docLines:[{t:'§ 12. GOVERNING LAW',c:'section-head'},{t:'12.1 This Agreement shall be',c:'dim'},{t:'     construed under:',c:'dim'},{t:'',c:'dim'},{t:'- laws of the State of Delaware,',c:'highlight-rem'},{t:'- USA.',c:'highlight-rem'},{t:'+ laws of England and Wales.',c:'highlight-add'},{t:'',c:'dim'},{t:'12.2 Venue: courts of competent…',c:'dim'}]},
+  {id:'f4',sev:'med',sevLabel:'Medium risk',clause:'§ 5.3',title:'Non-compete scope broadened',
+   desc:'Non-compete territory expanded from the US to worldwide, and duration increased from 12 to 24 months.',
+   rem:'Non-compete applies within the United States for 12 months.',add:'Non-compete applies globally for a period of 24 months.',page:5,
+   docLines:[{t:'§ 5. NON-COMPETE',c:'section-head'},{t:'5.1  Recipient agrees not to…',c:'dim'},{t:'5.2  Exceptions apply to…',c:'dim'},{t:'5.3  Scope and duration:',c:'dim'},{t:'',c:'dim'},{t:'- United States, 12 months.',c:'highlight-rem'},{t:'+ Globally, 24 months.',c:'highlight-add'},{t:'',c:'dim'},{t:'5.4  Remedies for violation…',c:'dim'}]},
+  {id:'f5',sev:'med',sevLabel:'Medium risk',clause:'§ 13',title:'Arbitration clause removed',
+   desc:'The mandatory arbitration clause has been deleted entirely. Disputes will now default to litigation in court.',
+   rem:'Any dispute shall be resolved through binding arbitration (AAA rules).',add:'(clause removed)',page:13,
+   docLines:[{t:'§ 13. DISPUTE RESOLUTION',c:'section-head'},{t:'',c:'dim'},{t:'- Any dispute shall be resolved',c:'highlight-rem'},{t:'- through binding arbitration',c:'highlight-rem'},{t:'- pursuant to AAA rules.',c:'highlight-rem'},{t:'',c:'dim'},{t:'[clause removed in draft]',c:'dim'},{t:'',c:'dim'},{t:'§ 14. MISCELLANEOUS',c:'dim'}]},
+  {id:'f6',sev:'low',sevLabel:'Low risk',clause:'§ 9.1',title:'Notice period for termination shortened',
+   desc:'Written notice requirement reduced from 30 days to 14 days. Minor operational impact only.',
+   rem:'Termination requires 30 days written notice.',add:'Termination requires 14 days written notice.',page:9,
+   docLines:[{t:'§ 9. TERMINATION',c:'section-head'},{t:'9.1  Either party may terminate',c:'dim'},{t:'     this Agreement by providing:',c:'dim'},{t:'',c:'dim'},{t:'- 30 days written notice.',c:'highlight-rem'},{t:'+ 14 days written notice.',c:'highlight-add'},{t:'',c:'dim'},{t:'9.2  Upon termination, Recipient…',c:'dim'}]},
+  {id:'f7',sev:'info',sevLabel:'Info',clause:'§ 1',title:'Party name updated to legal entity',
+   desc:'Counterparty name corrected to full legal entity name. No substantive change to rights or obligations.',
+   rem:'Acme Inc.',add:'Acme Technologies, Inc. (a Delaware corporation)',page:1,
+   docLines:[{t:'§ 1. PARTIES',c:'section-head'},{t:'',c:'dim'},{t:'This Agreement is entered into',c:'dim'},{t:'by and between:',c:'dim'},{t:'',c:'dim'},{t:'- Acme Inc.',c:'highlight-rem'},{t:'+ Acme Technologies, Inc.',c:'highlight-add'},{t:'+ (a Delaware corporation)',c:'highlight-add'},{t:'',c:'dim'}]},
+];
+
+let pending=FLAGS.length;
+
+function sevClass(s){return s==='high'?'sev-high':s==='med'?'sev-med':s==='low'?'sev-low':'sev-info';}
+
+function buildDocPreview(f){
+  return f.docLines.map(l=>`<div class="doc-line ${l.c}">${l.t||'&nbsp;'}</div>`).join('');
+}
+
+function renderFlags(){
+  document.getElementById('flags').innerHTML=FLAGS.map(f=>`
+    <div class="flag-row" id="${f.id}" data-status="pending">
+      <div class="flag-summary" onclick="toggleFlag('${f.id}')">
+        <svg class="flag-chevron" viewBox="0 0 16 16" stroke-width="1.5"><path d="M6 4l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="severity ${sevClass(f.sev)}">${f.sevLabel}</span>
+        <span class="flag-title">${f.title}</span>
+        <span class="flag-clause">${f.clause}</span>
+        <span class="flag-status-dot" id="${f.id}-dot"></span>
+      </div>
+      <div class="flag-body">
+        <div class="flag-inner">
+          <div class="flag-detail">
+            <p class="flag-desc">${f.desc}</p>
+            <div class="flag-diff">
+              <div class="diff-rem">− ${f.rem}</div>
+              <div class="diff-add">+ ${f.add}</div>
+            </div>
+            <div class="flag-actions">
+              <button class="btn btn-success" id="${f.id}-app" onclick="flagAct('${f.id}','approved')">Approve</button>
+              <button class="btn btn-danger" id="${f.id}-rej" onclick="flagAct('${f.id}','rejected')">Reject</button>
+            </div>
+          </div>
+          <div class="doc-preview">
+            <div class="preview-label">Document location</div>
+            <div class="doc-page">${buildDocPreview(f)}</div>
+            <div class="preview-page-num">Page ${f.page}</div>
+          </div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function toggleFlag(id){
+  const el=document.getElementById(id);
+  const was=el.classList.contains('open');
+  document.querySelectorAll('.flag-row.open').forEach(r=>r.classList.remove('open'));
+  if(!was) el.classList.add('open');
+}
+
+function flagAct(id,status){
+  const el=document.getElementById(id);
+  if(el.dataset.status!=='pending') return;
+  el.dataset.status=status;
+  el.classList.remove('approved','rejected');
+  el.classList.add(status);
+  document.getElementById(id+'-app').disabled=true;
+  document.getElementById(id+'-rej').disabled=true;
+  pending=Math.max(0,pending-1);
+  document.getElementById('cnt-pend').textContent=pending;
+}
+
+function bulkAct(status){
+  FLAGS.forEach(f=>{const el=document.getElementById(f.id);if(el&&el.dataset.status==='pending')flagAct(f.id,status);});
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function startThinking(){
+  showScreen('s1b');
+  setTimeout(()=>showScreen('s2'),3200);
+}
+
+renderFlags();
+</script>
+</body>
+</html>
