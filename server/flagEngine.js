@@ -1,10 +1,4 @@
-import { readFileSync } from 'fs';
-import { fileURLToPath } from 'url';
-import path from 'path';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const rulebook = JSON.parse(readFileSync(path.join(__dirname, '../config/rules.json'), 'utf-8'));
-const RULE_MAP = Object.fromEntries(rulebook.rules.map(r => [r.id, r]));
+import { RULE_MAP } from './config.js';
 
 export function applyRules(rawFindings) {
   return rawFindings

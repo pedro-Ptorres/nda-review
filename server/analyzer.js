@@ -1,24 +1,19 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { readFileSync } from 'fs';
-import { fileURLToPath } from 'url';
-import path from 'path';
 import { mockAnalysis } from './mock.js';
+import { rulebook } from './config.js';
 
-// Toggle to false when API key is ready
-const USE_MOCK = true;
+const USE_MOCK = process.env.USE_MOCK !== 'false';
+const CLAUDE_MODEL = process.env.CLAUDE_MODEL || 'claude-sonnet-4-6';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const rulebook = JSON.parse(readFileSync(path.join(__dirname, '../config/rules.json'), 'utf-8'));
-
-export async function runAnalysis(uploadedText, baselineText) {
+export async function runAnalysis(uploadedText, baselineText, docType = 'nda') {
   if (USE_MOCK) {
-    console.log('[analyzer] Using mock — set USE_MOCK=false when API key is ready');
+    console.log('[analyzer] Mock mode — set USE_MOCK=false in .env when API key is ready');
     return mockAnalysis(uploadedText, baselineText);
   }
-  return claudeAnalysis(uploadedText, baselineText);
+  return claudeAnalysis(uploadedText, baselineText, docType);
 }
 
-async function claudeAnalysis(uploadedText, baselineText) {
+async function claudeAnalysis(uploadedText, baselineText, docType) {
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
   const rulesText = rulebook.rules.map(r =>
@@ -27,15 +22,15 @@ async function claudeAnalysis(uploadedText, baselineText) {
 
   const prompt = `
 You are a legal document analyst specializing in NDAs.
-Compare the UPLOADED NDA against the BASELINE NDA and identify deviations matching the rules below.
+Compare the UPLOADED ${docType.toUpperCase()} against the BASELINE and identify deviations matching the rules below.
 
 RULES:
 ${rulesText}
 
-BASELINE NDA:
+BASELINE:
 ${baselineText}
 
-UPLOADED NDA:
+UPLOADED DOCUMENT:
 ${uploadedText}
 
 Return ONLY a valid JSON array of findings:
@@ -52,7 +47,7 @@ Return ONLY a valid JSON array of findings:
 Only include real deviations. No fabricated flags. No markdown or code fences.`;
 
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-6',
+    model: CLAUDE_MODEL,
     max_tokens: 4096,
     messages: [{ role: 'user', content: prompt }],
   });
