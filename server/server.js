@@ -4,6 +4,7 @@ import cors from 'cors';
 import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { readdir } from 'fs/promises';
 import { parsePdf } from './parser.js';
 import { runAnalysis } from './analyzer.js';
 import { applyRules } from './flagEngine.js';
@@ -13,28 +14,35 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Cache baselines at startup — restart server to pick up new files
+// Auto-discover baselines at startup — drop baseline-{type}.pdf in config/ and restart
 const BASELINES = {};
 async function loadBaselines() {
-  const types = { nda: 'baseline-nda.pdf', da: 'baseline-da.pdf' };
-  for (const [type, filename] of Object.entries(types)) {
-    const filePath = path.join(CONFIG_DIR, filename);
+  const files = await readdir(CONFIG_DIR);
+  const pattern = /^baseline-(.+)\.pdf$/;
+
+  for (const filename of files) {
+    const match = filename.match(pattern);
+    if (!match) continue;
     try {
-      BASELINES[type] = await parsePdf(filePath, { fromPath: true });
-      console.log(`[startup] Loaded baseline: ${filename}`);
-    } catch {
-      console.warn(`[startup] Baseline not found: config/${filename} — add this file and restart to enable ${type.toUpperCase()} analysis.`);
+      BASELINES[match[1]] = await parsePdf(path.join(CONFIG_DIR, filename), { fromPath: true });
+      console.log(`[startup] Loaded baseline: ${filename} → type "${match[1]}"`);
+    } catch (err) {
+      console.warn(`[startup] Failed to parse ${filename}: ${err.message}`);
     }
   }
-  if (!BASELINES.nda) {
-    // Legacy fallback — support old baseline.pdf name
+
+  // Legacy fallback — baseline.pdf maps to "nda"
+  if (!BASELINES.nda && files.includes('baseline.pdf')) {
     try {
       BASELINES.nda = await parsePdf(path.join(CONFIG_DIR, 'baseline.pdf'), { fromPath: true });
-      console.log('[startup] Loaded baseline: baseline.pdf (legacy)');
+      console.log('[startup] Loaded baseline: baseline.pdf (legacy → nda)');
     } catch {
-      console.warn('[startup] No NDA baseline found. Add config/baseline-nda.pdf (or legacy config/baseline.pdf) and restart the server.');
+      console.warn('[startup] Failed to parse legacy baseline.pdf');
     }
   }
+
+  const types = Object.keys(BASELINES);
+  console.log(`[startup] ${types.length} baseline(s) ready: ${types.join(', ') || 'none'}`);
 }
 
 app.use(cors());
@@ -85,6 +93,12 @@ app.post('/api/v1/analyze', upload.single('document'), async (req, res) => {
 });
 
 app.get('/api/v1/health', (req, res) => res.json({ status: 'ok', version: '1.0' }));
+
+// Catch multer and other middleware errors — return JSON instead of raw HTML
+app.use((err, _req, res, _next) => {
+  console.error(`[error] ${err.message}`);
+  res.status(err.status || 500).json({ error: err.message });
+});
 
 loadBaselines().then(() => {
   app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
