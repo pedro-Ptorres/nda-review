@@ -5,7 +5,7 @@ export function applyRules(rawFindings) {
     .map((finding, index) => {
       const rule = RULE_MAP[finding.ruleId];
       if (!rule) {
-        console.warn(`[flagEngine] Unknown ruleId: ${finding.ruleId}`);
+        console.warn(`[flagEngine] Skipping finding — ruleId "${finding.ruleId}" not found in config/rules.json. Add it or check for typos.`);
         return null;
       }
       return {
