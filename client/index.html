@@ -84,17 +84,24 @@ body{font-family:var(--font-sans);background:var(--bg-tertiary);color:var(--text
 /* ── Split pane ── */
 .split-pane{display:grid;grid-template-columns:300px 1fr;gap:0;border:0.5px solid var(--border-t);border-radius:var(--radius-lg);overflow:hidden;height:520px}
 .flags-list{overflow-y:auto;border-right:0.5px solid var(--border-t);background:var(--bg-primary)}
-.flag-item{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;border-bottom:0.5px solid var(--border-t);transition:background .12s;user-select:none}
+.flag-item{display:flex;align-items:stretch;cursor:pointer;border-bottom:0.5px solid var(--border-t);transition:background .12s;user-select:none}
 .flag-item:hover{background:var(--bg-secondary)}
-.flag-item.active{background:rgba(83,74,183,.1);border-left:3px solid #534AB7}
-.flag-item.approved{border-left:3px solid #1D9E75;opacity:.7}
-.flag-item.rejected{border-left:3px solid #E24B4A;opacity:.45}
-.flag-item-text{flex:1;min-width:0}
+.flag-item.active{background:rgba(83,74,183,.08)}
+.flag-item.approved{opacity:.8}
+.flag-item.rejected{opacity:.5}
+/* Left severity column — fixed width, turns green/red on action */
+.flag-sev-col{width:80px;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:8px 6px;transition:background .2s}
+.flag-item.approved .flag-sev-col{background:#1D9E75}
+.flag-item.rejected .flag-sev-col{background:#E24B4A}
+.flag-item.approved .severity,.flag-item.rejected .severity{display:none}
+.flag-act-icon{display:none;font-size:15px;font-weight:700;color:#fff}
+.flag-item.approved .flag-act-icon::before{display:block;content:'✓'}
+.flag-item.rejected .flag-act-icon::before{display:block;content:'✕'}
+.flag-item.approved .flag-act-icon,.flag-item.rejected .flag-act-icon{display:block}
+/* Right text column */
+.flag-item-body{flex:1;min-width:0;padding:10px 12px;display:flex;flex-direction:column;justify-content:center}
 .flag-item-title{font-size:12px;font-weight:500;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.flag-item-clause{font-size:11px;color:var(--text-secondary);margin-top:1px}
-.flag-status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;background:var(--border-s)}
-.flag-item.approved .flag-status-dot{background:#1D9E75}
-.flag-item.rejected .flag-status-dot{background:#E24B4A}
+.flag-item-clause{font-size:11px;color:var(--text-secondary);margin-top:2px}
 
 /* ── Detail pane ── */
 .detail-pane{display:flex;flex-direction:column;background:var(--bg-primary);overflow:hidden}

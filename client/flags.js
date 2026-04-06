@@ -3,6 +3,8 @@ let selectedId = null;
 let pendingCount = 0;
 let totalFlags = 0;
 
+const stripSection = s => s ? s.replace(/§\s*/g, '').trim() : s;
+
 export function renderFlags(flags) {
   allFlags = flags;
   pendingCount = flags.length;
@@ -34,26 +36,37 @@ function sevClass(s) {
 function flagItemHTML(f) {
   return `
     <div class="flag-item" id="${f.id}" data-status="pending" onclick="selectFlag('${f.id}')">
-      <span class="severity ${sevClass(f.severity)}">${f.sevLabel}</span>
-      <div class="flag-item-text">
-        <div class="flag-item-title">${f.title}</div>
-        <div class="flag-item-clause">${f.clause}</div>
+      <div class="flag-sev-col">
+        <span class="severity ${sevClass(f.severity)}">${f.sevLabel}</span>
+        <span class="flag-act-icon"></span>
       </div>
-      <span class="flag-status-dot" id="${f.id}-dot"></span>
+      <div class="flag-item-body">
+        <div class="flag-item-title">${f.title}</div>
+        <div class="flag-item-clause">${stripSection(f.clause)}</div>
+      </div>
     </div>`;
 }
 
 // ── Right pane: full detail view ──
 function detailHTML(f) {
   const index = allFlags.findIndex(x => x.id === f.id);
-  const total = allFlags.length;
-  const isActed = f._status && f._status !== 'pending';
+  const status = f._status || 'pending';
+  const isApproved = status === 'approved';
+  const isRejected = status === 'rejected';
+
+  const appBtn = isApproved
+    ? `<button class="btn" style="background:#1D9E75;color:#fff;border-color:#1D9E75;font-size:12px;padding:6px 14px" onclick="flagAct('${f.id}','approved')">✓ Approved — undo</button>`
+    : `<button class="btn btn-success" style="font-size:12px;padding:6px 14px" onclick="flagAct('${f.id}','approved')" ${isRejected ? 'disabled' : ''}>✓ Approve</button>`;
+
+  const rejBtn = isRejected
+    ? `<button class="btn" style="background:#E24B4A;color:#fff;border-color:#E24B4A;font-size:12px;padding:6px 14px" onclick="flagAct('${f.id}','rejected')">✕ Rejected — undo</button>`
+    : `<button class="btn btn-danger" style="font-size:12px;padding:6px 14px" onclick="flagAct('${f.id}','rejected')" ${isApproved ? 'disabled' : ''}>✕ Reject</button>`;
 
   return `
     <div class="detail-header">
-      <span class="detail-clause">${f.clause} — ${f.title}</span>
+      <span class="detail-clause">${stripSection(f.clause)} — ${f.title}</span>
       <span class="detail-page">Page ${f.page}</span>
-      <span class="detail-counter">${index + 1} of ${total}</span>
+      <span class="detail-counter">${index + 1} of ${allFlags.length}</span>
     </div>
     <div class="detail-body">
       <div class="detail-block">
@@ -70,44 +83,56 @@ function detailHTML(f) {
       </div>
     </div>
     <div class="detail-actions">
-      <button class="btn btn-success" id="${f.id}-app" onclick="flagAct('${f.id}','approved')" ${isActed ? 'disabled' : ''}>✓ Approve</button>
-      <button class="btn btn-danger"  id="${f.id}-rej" onclick="flagAct('${f.id}','rejected')" ${isActed ? 'disabled' : ''}>✕ Reject</button>
-      <button class="btn" style="margin-left:auto" onclick="skipFlag('${f.id}')">Skip →</button>
+      ${appBtn}
+      ${rejBtn}
+      <button class="btn" style="margin-left:auto;font-size:12px;padding:6px 14px" onclick="skipFlag('${f.id}')">Skip →</button>
     </div>`;
 }
 
-function applyStatus(id, status) {
-  const el = document.getElementById(id);
-  if (!el || el.dataset.status !== 'pending') return;
-  el.dataset.status = status;
-  el.classList.remove('approved', 'rejected');
-  el.classList.add(status);
+function applyStatus(id, newStatus) {
   const flag = allFlags.find(f => f.id === id);
-  if (flag) flag._status = status;
-  const appBtn = document.getElementById(`${id}-app`);
-  const rejBtn = document.getElementById(`${id}-rej`);
-  if (appBtn) appBtn.disabled = true;
-  if (rejBtn) rejBtn.disabled = true;
-  pendingCount = Math.max(0, pendingCount - 1);
-  updatePendingCount();
-  // Auto-advance to next pending flag
-  advanceToNext(id);
+  const el = document.getElementById(id);
+  if (!flag || !el) return;
+
+  const currentStatus = flag._status || 'pending';
+
+  if (currentStatus === newStatus) {
+    // Clicking active button = undo back to pending
+    flag._status = 'pending';
+    el.dataset.status = 'pending';
+    el.classList.remove('approved', 'rejected');
+    pendingCount++;
+    updatePendingCount();
+    document.getElementById('detail-pane').innerHTML = detailHTML(flag);
+    return;
+  }
+
+  // New action (from pending)
+  const wasPending = currentStatus === 'pending';
+  flag._status = newStatus;
+  el.dataset.status = newStatus;
+  el.classList.remove('approved', 'rejected');
+  el.classList.add(newStatus);
+
+  if (wasPending) {
+    pendingCount = Math.max(0, pendingCount - 1);
+    updatePendingCount();
+    advanceToNext(id);
+  } else {
+    document.getElementById('detail-pane').innerHTML = detailHTML(flag);
+  }
 }
 
 function advanceToNext(currentId) {
   const currentIndex = allFlags.findIndex(f => f.id === currentId);
   for (let i = currentIndex + 1; i < allFlags.length; i++) {
     if (!allFlags[i]._status || allFlags[i]._status === 'pending') {
-      selectFlag(allFlags[i].id);
+      selectFlagInternal(allFlags[i].id);
       return;
     }
   }
-  // No more pending — refresh detail to show disabled state
-  if (selectedId === currentId) refreshDetail(currentId);
-}
-
-function refreshDetail(id) {
-  const flag = allFlags.find(f => f.id === id);
+  // No more pending ahead — refresh detail in place
+  const flag = allFlags.find(f => f.id === currentId);
   if (flag) document.getElementById('detail-pane').innerHTML = detailHTML(flag);
 }
 
@@ -117,38 +142,20 @@ function updatePendingCount() {
   if (btnNext) btnNext.disabled = (pendingCount === totalFlags);
 }
 
-window.selectFlag = function(id) {
+function selectFlagInternal(id) {
   selectedId = id;
   const flag = allFlags.find(f => f.id === id);
   if (!flag) return;
-
-  // If already acted on — undo back to pending on re-click
-  if (flag._status && flag._status !== 'pending') {
-    flag._status = 'pending';
-    const el = document.getElementById(id);
-    if (el) {
-      el.dataset.status = 'pending';
-      el.classList.remove('approved', 'rejected');
-    }
-    pendingCount++;
-    updatePendingCount();
-  }
-
-  // Update active state in list
   document.querySelectorAll('.flag-item').forEach(el => el.classList.remove('active'));
   const item = document.getElementById(id);
-  if (item) {
-    item.classList.add('active');
-    item.scrollIntoView({ block: 'nearest' });
-  }
-
+  if (item) { item.classList.add('active'); item.scrollIntoView({ block: 'nearest' }); }
   document.getElementById('detail-pane').innerHTML = detailHTML(flag);
-};
+}
 
+// Public — just selects and shows current state, no side effects
+window.selectFlag = selectFlagInternal;
 window.flagAct = applyStatus;
-
 window.skipFlag = function(currentId) {
-  const currentIndex = allFlags.findIndex(f => f.id === currentId);
-  const next = allFlags[currentIndex + 1];
-  if (next) selectFlag(next.id);
+  const next = allFlags[allFlags.findIndex(f => f.id === currentId) + 1];
+  if (next) selectFlagInternal(next.id);
 };
