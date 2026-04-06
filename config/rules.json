@@ -1,0 +1,156 @@
+{
+  "rules": [
+    {
+      "id": "CONF_TERM",
+      "name": "Confidentiality survival term",
+      "section": "Survival / Term",
+      "severity": "high",
+      "flagIf": "Survival period is reduced below 5 years or trade secret carve-out is removed",
+      "note": "Survival period or trade secret protection weakened"
+    },
+    {
+      "id": "CONF_SCOPE",
+      "name": "Confidential information definition",
+      "section": "Definitions",
+      "severity": "high",
+      "flagIf": "Definition narrowed to require written/electronic markings, excluding oral disclosures",
+      "note": "Confidentiality scope narrowed or marking requirement added"
+    },
+    {
+      "id": "CONF_EXCLUSIONS",
+      "name": "Confidentiality exclusions",
+      "section": "Definitions",
+      "severity": "medium",
+      "flagIf": "Exclusions broadened beyond standard (public domain, prior knowledge, independent development, legal compulsion)",
+      "note": "Exclusions from confidentiality broadened"
+    },
+    {
+      "id": "GOVERNING_LAW",
+      "name": "Governing law and jurisdiction",
+      "section": "Governing Law",
+      "severity": "medium",
+      "flagIf": "Governing law or jurisdiction changed from the baseline",
+      "note": "Governing law or jurisdiction modified"
+    },
+    {
+      "id": "AGREEMENT_TERM",
+      "name": "Agreement term / duration",
+      "section": "Term",
+      "severity": "medium",
+      "flagIf": "Base term of agreement reduced from baseline",
+      "note": "Agreement duration shortened"
+    },
+    {
+      "id": "TERMINATION_NOTICE",
+      "name": "Termination notice period",
+      "section": "Termination",
+      "severity": "low",
+      "flagIf": "Minimum notice period introduced or existing notice period changed",
+      "note": "Termination notice requirements changed"
+    },
+    {
+      "id": "STANDARD_OF_CARE",
+      "name": "Standard of care for confidentiality",
+      "section": "Obligations",
+      "severity": "medium",
+      "flagIf": "Standard weakened from 'same degree of care as own confidential information' to lesser standard",
+      "note": "Standard of care for protecting confidential information weakened"
+    },
+    {
+      "id": "MANDATORY_DISCLOSURE",
+      "name": "Mandatory disclosure / compelled disclosure",
+      "section": "Obligations",
+      "severity": "low",
+      "flagIf": "Notice requirement to disclosing party before compelled disclosure removed or weakened",
+      "note": "Mandatory disclosure protections weakened"
+    },
+    {
+      "id": "INDEMNIFICATION",
+      "name": "Indemnification and liability",
+      "section": "Indemnification",
+      "severity": "high",
+      "flagIf": "Indemnification capped, removed, or limited compared to baseline",
+      "note": "Indemnification limited or capped"
+    },
+    {
+      "id": "RETURN_OF_MATERIALS",
+      "name": "Return or destruction of materials",
+      "section": "Return of Materials",
+      "severity": "low",
+      "flagIf": "Obligation to return or destroy confidential information removed or weakened",
+      "note": "Return/destruction obligations weakened"
+    },
+    {
+      "id": "ASSIGNMENT",
+      "name": "Assignment of agreement",
+      "section": "General",
+      "severity": "medium",
+      "flagIf": "Assignment permitted without consent (e.g., to affiliates or acquirers)",
+      "note": "Assignment permitted without prior written consent"
+    },
+    {
+      "id": "AGENTS_SCOPE",
+      "name": "Permitted disclosure to agents/employees",
+      "section": "Obligations",
+      "severity": "low",
+      "flagIf": "Permitted disclosure scope broadened beyond need-to-know basis",
+      "note": "Permitted disclosure scope for agents/employees broadened"
+    },
+    {
+      "id": "DATA_PROTECTION",
+      "name": "Data protection compliance",
+      "section": "Data Protection",
+      "severity": "high",
+      "flagIf": "Strict compliance duty weakened to reasonable efforts, or mutual indemnification for data breaches removed",
+      "note": "Data protection obligations weakened or GDPR exposure unmitigated"
+    },
+    {
+      "id": "USE_RESTRICTION",
+      "name": "Permitted use restriction",
+      "section": "Use Restrictions",
+      "severity": "medium",
+      "flagIf": "Permitted use expanded beyond the specific Opportunity to other purposes",
+      "note": "Permitted use scope expanded beyond defined Opportunity"
+    },
+    {
+      "id": "EQUITABLE_RELIEF",
+      "name": "Equitable relief",
+      "section": "Remedies",
+      "severity": "low",
+      "flagIf": "Right to seek injunctive or equitable relief removed or restricted",
+      "note": "Equitable relief provision removed or weakened"
+    },
+    {
+      "id": "AMENDMENT",
+      "name": "Amendment requirements",
+      "section": "General",
+      "severity": "low",
+      "flagIf": "Written amendment requirement removed or unilateral amendment permitted",
+      "note": "Amendment process weakened"
+    },
+    {
+      "id": "NO_LICENCE",
+      "name": "No licence granted",
+      "section": "Intellectual Property",
+      "severity": "high",
+      "flagIf": "No-licence clause removed or modified to allow implied licence",
+      "note": "No-licence clause removed — implied licence risk"
+    },
+    {
+      "id": "SEVERABILITY",
+      "name": "Severability",
+      "section": "General",
+      "severity": "info",
+      "flagIf": "Severability clause removed or modified",
+      "note": "Severability clause changed"
+    },
+    {
+      "id": "PURPOSE",
+      "name": "Purpose definition",
+      "section": "Definitions",
+      "severity": "medium",
+      "flagIf": "Purpose definition broadened or made ambiguous beyond evaluating the Opportunity",
+      "note": "Purpose definition broadened or vague"
+    }
+  ]
+}
