@@ -7,7 +7,7 @@ const CLAUDE_MODEL = process.env.CLAUDE_MODEL || 'claude-sonnet-4-6';
 
 export async function runAnalysis(uploadedText, baselineText, docType = 'nda') {
   if (USE_MOCK) {
-    console.log('[analyzer] Mock mode — set USE_MOCK=false in .env when API key is ready');
+    console.log('[analyzer] Mock mode active — results are simulated. Set USE_MOCK=false in .env to enable real Claude analysis.');
     return mockAnalysis(uploadedText, baselineText);
   }
   return claudeAnalysis(uploadedText, baselineText, docType);
@@ -56,6 +56,6 @@ Only include real deviations. No fabricated flags. No markdown or code fences.`;
   try {
     return JSON.parse(raw);
   } catch {
-    throw new Error('AI response was not valid JSON. Try again.');
+    throw new Error(`Claude returned invalid JSON. Raw response: ${raw.slice(0, 200)}`);
   }
 }

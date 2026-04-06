@@ -65,51 +65,61 @@ body{font-family:var(--font-sans);background:var(--bg-tertiary);color:var(--text
 .step-done{color:var(--text-primary)}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
 
-.summary-bar{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:1.25rem}
+/* ── Summary bar ── */
+.summary-bar{display:grid;grid-template-columns:auto repeat(4,minmax(0,1fr));gap:8px;margin-bottom:1.25rem;align-items:center}
+.flags-found{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 16px}
+.flags-found-n{font-size:26px;font-weight:700;color:#854F0B;line-height:1}
+.flags-found-l{font-size:11px;font-weight:600;color:#854F0B;letter-spacing:.04em;margin-top:2px}
 .stat-card{background:var(--bg-secondary);border-radius:var(--radius-md);padding:10px;text-align:center}
 .stat-n{font-size:20px;font-weight:500}
 .stat-l{font-size:11px;color:var(--text-secondary);margin-top:2px}
 
+/* ── Severity badges ── */
 .severity{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500;white-space:nowrap;flex-shrink:0}
 .sev-high{background:#FCEBEB;color:#A32D2D}
 .sev-med{background:#FAEEDA;color:#854F0B}
 .sev-low{background:#EAF3DE;color:#3B6D11}
 .sev-info{background:#E6F1FB;color:#185FA5}
 
-.flag-row{border:0.5px solid var(--border-t);border-radius:var(--radius-md);margin-bottom:6px;overflow:hidden;background:var(--bg-primary);transition:border-color .15s}
-.flag-row:hover{border-color:var(--border-s)}
-.flag-row.approved{border-left:3px solid #1D9E75}
-.flag-row.rejected{border-left:3px solid #E24B4A;opacity:.55}
-.flag-summary{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;user-select:none}
-.flag-chevron{width:16px;height:16px;flex-shrink:0;transition:transform .2s;stroke:var(--text-secondary);fill:none}
-.flag-row.open .flag-chevron{transform:rotate(90deg)}
-.flag-title{font-size:13px;font-weight:500;color:var(--text-primary);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.flag-clause{font-size:11px;color:var(--text-secondary);flex-shrink:0}
-.flag-status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;background:var(--border-s)}
-.flag-row.approved .flag-status-dot{background:#1D9E75}
-.flag-row.rejected .flag-status-dot{background:#E24B4A}
-.flag-body{display:none;border-top:0.5px solid var(--border-t)}
-.flag-row.open .flag-body{display:block}
-.flag-inner{display:grid;grid-template-columns:minmax(0,1fr) 220px}
-@media(max-width:600px){.flag-inner{grid-template-columns:1fr}}
-.flag-detail{padding:14px 16px}
-.flag-desc{font-size:13px;color:var(--text-secondary);line-height:1.55;margin-bottom:12px}
-.flag-diff{font-size:12px;background:var(--bg-secondary);border-radius:var(--radius-md);padding:8px 12px;font-family:var(--font-mono);line-height:1.7;margin-bottom:12px}
-.diff-add{color:#1D9E75}
-.diff-rem{color:#E24B4A}
-.flag-actions{display:flex;gap:6px;flex-wrap:wrap}
-.flag-actions .btn{padding:5px 11px;font-size:12px}
-.doc-preview{border-left:0.5px solid var(--border-t);padding:14px 12px;background:var(--bg-secondary)}
-@media(max-width:600px){.doc-preview{border-left:none;border-top:0.5px solid var(--border-t)}}
-.preview-label{font-size:11px;color:var(--text-secondary);margin-bottom:10px;font-weight:500}
-.doc-page{background:var(--bg-primary);border:0.5px solid var(--border-t);border-radius:4px;padding:10px;font-size:9.5px;font-family:var(--font-mono);line-height:1.6;color:var(--text-secondary);min-height:140px}
-.doc-line{padding:1px 0}
-.doc-line.highlight-rem{background:#FCEBEB;color:#A32D2D;border-radius:2px;padding:1px 4px;margin:0 -4px}
-.doc-line.highlight-add{background:#EAF3DE;color:#27500a;border-radius:2px;padding:1px 4px;margin:0 -4px}
-.doc-line.dim{opacity:.4}
-.doc-line.section-head{color:var(--text-primary);font-weight:500;opacity:1}
-.preview-page-num{font-size:10px;color:var(--text-secondary);text-align:center;margin-top:6px}
-.action-footer{display:flex;gap:8px;margin-top:1.25rem;padding-top:1.25rem;border-top:0.5px solid var(--border-t);flex-wrap:wrap}
+/* ── Split pane ── */
+.split-pane{display:grid;grid-template-columns:300px 1fr;gap:0;border:0.5px solid var(--border-t);border-radius:var(--radius-lg);overflow:hidden;height:520px}
+.flags-list{overflow-y:auto;border-right:0.5px solid var(--border-t);background:var(--bg-primary)}
+.flag-item{display:flex;align-items:stretch;cursor:pointer;border-bottom:0.5px solid var(--border-t);transition:background .12s;user-select:none}
+.flag-item:hover{background:var(--bg-secondary)}
+.flag-item.active{background:rgba(83,74,183,.08)}
+.flag-item.approved{opacity:.8}
+.flag-item.rejected{opacity:.5}
+/* Left severity column — fixed width, turns green/red on action */
+.flag-sev-col{width:80px;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:8px 6px;transition:background .2s}
+.flag-item.approved .flag-sev-col{background:#1D9E75}
+.flag-item.rejected .flag-sev-col{background:#E24B4A}
+.flag-item.approved .severity,.flag-item.rejected .severity{display:none}
+.flag-act-icon{display:none;font-size:15px;font-weight:700;color:#fff}
+.flag-item.approved .flag-act-icon::before{display:block;content:'✓'}
+.flag-item.rejected .flag-act-icon::before{display:block;content:'✕'}
+.flag-item.approved .flag-act-icon,.flag-item.rejected .flag-act-icon{display:block}
+/* Right text column */
+.flag-item-body{flex:1;min-width:0;padding:10px 12px;display:flex;flex-direction:column;justify-content:center}
+.flag-item-title{font-size:12px;font-weight:500;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.flag-item-clause{font-size:11px;color:var(--text-secondary);margin-top:2px}
+
+/* ── Detail pane ── */
+.detail-pane{display:flex;flex-direction:column;background:var(--bg-primary);overflow:hidden}
+.detail-header{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:0.5px solid var(--border-t);flex-shrink:0}
+.detail-clause{font-size:14px;font-weight:500;flex:1}
+.detail-page{font-size:11px;color:var(--text-secondary)}
+.detail-counter{font-size:11px;color:var(--text-secondary);background:var(--bg-secondary);padding:2px 8px;border-radius:20px}
+.detail-body{flex:1;overflow-y:auto;padding:16px}
+.detail-block{margin-bottom:16px}
+.detail-block-label{font-size:10px;font-weight:600;letter-spacing:.06em;color:var(--text-tertiary);margin-bottom:6px;text-transform:uppercase}
+.detail-text{font-size:12px;font-family:var(--font-mono);background:var(--bg-secondary);border-radius:var(--radius-md);padding:10px 12px;line-height:1.7;border:0.5px solid var(--border-t)}
+.diff-rem{color:#E24B4A;display:block}
+.diff-add{color:#1D9E75;display:block}
+.detail-why{font-size:13px;color:var(--text-secondary);line-height:1.6;background:var(--bg-secondary);border-radius:var(--radius-md);padding:10px 12px;border:0.5px solid var(--border-t)}
+.detail-actions{display:flex;gap:8px;padding:12px 16px;border-top:0.5px solid var(--border-t);flex-shrink:0}
+.detail-actions .btn{padding:6px 14px;font-size:12px}
+.detail-empty{display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-tertiary);font-size:13px}
+.action-footer{display:flex;gap:8px;margin-top:1rem;flex-wrap:wrap}
 .avatar{width:28px;height:28px;border-radius:50%;background:#EEEDFE;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:#534AB7;flex-shrink:0}
 .error-msg{font-size:13px;color:var(--text-danger);background:var(--bg-danger);border:0.5px solid var(--border-danger);border-radius:var(--radius-md);padding:10px 14px;margin-top:12px;display:none}
 .screen-title{font-size:17px;font-weight:500;margin-bottom:4px}
@@ -201,22 +211,38 @@ body{font-family:var(--font-sans);background:var(--bg-tertiary);color:var(--text
     <div class="result-header">
       <div>
         <p class="result-title" id="result-filename">document.pdf</p>
-        <p class="result-sub">vs. Appning NDA · <span id="result-count">0</span> deltas found</p>
+        <p class="result-sub">vs. Appning NDA</p>
       </div>
       <div class="topbar-actions">
         <button class="btn" style="font-size:12px" onclick="showScreen('s1')">New review</button>
       </div>
     </div>
     <div class="summary-bar">
+      <div class="flags-found"><div class="flags-found-n" id="result-count">0</div><div class="flags-found-l">Flags Found</div></div>
       <div class="stat-card"><div class="stat-n" style="color:#A32D2D" id="cnt-high">0</div><div class="stat-l">High risk</div></div>
       <div class="stat-card"><div class="stat-n" style="color:#854F0B" id="cnt-med">0</div><div class="stat-l">Medium</div></div>
       <div class="stat-card"><div class="stat-n" style="color:#3B6D11" id="cnt-low-info">0</div><div class="stat-l">Low / info</div></div>
       <div class="stat-card"><div class="stat-n" id="cnt-pend">0</div><div class="stat-l">Pending</div></div>
     </div>
-    <div id="flags"></div>
+    <div class="split-pane">
+      <div class="flags-list" id="flags"></div>
+      <div class="detail-pane" id="detail-pane">
+        <div class="detail-empty">← Select a flag to review</div>
+      </div>
+    </div>
     <div class="action-footer">
       <button class="btn btn-success" onclick="bulkAct('approved')">Approve all remaining</button>
       <button class="btn btn-danger" onclick="bulkAct('rejected')">Reject all remaining</button>
+      <button class="btn btn-primary" id="btn-next" style="margin-left:auto" disabled onclick="showScreen('s3')">Next →</button>
+    </div>
+  </div>
+
+  <!-- Screen 3: placeholder -->
+  <div id="s3" class="screen">
+    <div class="card" style="max-width:520px;margin:0 auto;text-align:center;padding:3rem 2rem">
+      <p class="screen-title" style="margin-bottom:8px">Review complete</p>
+      <p class="screen-sub">Export and next steps will live here.</p>
+      <button class="btn" style="margin-top:1.5rem" onclick="showScreen('s1')">← Start new review</button>
     </div>
   </div>
 </div>
@@ -264,11 +290,11 @@ fileInput.addEventListener('change', () => {
 
 async function handleFile(file) {
   if (file.type !== 'application/pdf') {
-    showError('Only PDF files are accepted.');
+    showError(`Invalid file type: "${file.type}". Only PDF files are accepted.`);
     return;
   }
   if (file.size > 20 * 1024 * 1024) {
-    showError('File exceeds 20 MB limit.');
+    showError(`File too large: ${(file.size / 1024 / 1024).toFixed(1)} MB. Maximum allowed is 20 MB.`);
     return;
   }
 
@@ -291,7 +317,7 @@ async function handleFile(file) {
     showScreen('s2');
   } catch (err) {
     showScreen('s1');
-    showError(err.message || 'Analysis failed. Please try again.');
+    showError(err.message || 'Analysis failed. Check the browser console (F12) and server logs for details.');
   }
 }
 
