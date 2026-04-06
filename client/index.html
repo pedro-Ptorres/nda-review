@@ -108,8 +108,8 @@ body{font-family:var(--font-sans);background:var(--bg-tertiary);color:var(--text
 .doc-line.section-head{color:var(--text-primary);font-weight:500;opacity:1}
 .preview-page-num{font-size:10px;color:var(--text-secondary);text-align:center;margin-top:6px}
 .action-footer{display:flex;gap:8px;margin-top:1.25rem;padding-top:1.25rem;border-top:0.5px solid var(--border-t);flex-wrap:wrap}
-.nav-tabs{display:flex;gap:6px;margin-bottom:1.5rem}
 .avatar{width:28px;height:28px;border-radius:50%;background:#EEEDFE;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:#534AB7;flex-shrink:0}
+.error-msg{font-size:13px;color:var(--text-danger);background:var(--bg-danger);border:0.5px solid var(--border-danger);border-radius:var(--radius-md);padding:10px 14px;margin-top:12px;display:none}
 </style>
 </head>
 <body>
@@ -118,46 +118,47 @@ body{font-family:var(--font-sans);background:var(--bg-tertiary);color:var(--text
     <div class="logo">nda<span>review</span></div>
     <div class="badge">Beta</div>
     <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-      <button class="btn" style="font-size:12px" onclick="showScreen('s1')">Upload</button>
-      <button class="btn" style="font-size:12px" onclick="showScreen('s1b')">Analyzing</button>
-      <button class="btn btn-primary" style="font-size:12px" onclick="showScreen('s2')">Review flags</button>
-      <div class="avatar">JR</div>
+      <div class="avatar">AB</div>
     </div>
   </div>
 
+  <!-- Upload screen -->
   <div id="s1" class="screen active">
     <div class="card" style="max-width:520px;margin:0 auto">
       <p style="font-size:17px;font-weight:500;margin-bottom:4px">New document review</p>
       <p style="font-size:13px;color:var(--text-secondary);margin-bottom:1.5rem">Upload an NDA or DA to compare against your standard template.</p>
       <div style="margin-bottom:1.25rem">
-        <p class="section-label">Comparison baseline</p>
+        <p class="section-label">What doc type are we reviewing?</p>
         <div style="display:flex;gap:8px">
-          <button class="btn" style="flex:1;justify-content:center;border-color:#7F77DD;color:#534AB7;background:#EEEDFE">Standard NDA v2.1</button>
-          <button class="btn" style="flex:1;justify-content:center">Custom template</button>
+          <button class="btn" style="flex:1;justify-content:center;border-color:#7F77DD;color:#534AB7;background:#EEEDFE">Appning NDA</button>
+          <button class="btn" style="flex:1;justify-content:center;opacity:.45;cursor:default" disabled title="Coming in v2">Appning DA <span style="font-size:10px;margin-left:4px;color:var(--text-tertiary)">v2</span></button>
         </div>
       </div>
-      <div class="upload-zone" onclick="startThinking()">
+      <input type="file" id="file-input" accept="application/pdf" style="display:none"/>
+      <div class="upload-zone" onclick="document.getElementById('file-input').click()">
         <div class="upload-icon"><svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <p style="font-size:14px;font-weight:500">Drop your PDF here</p>
         <p style="font-size:12px;color:var(--text-secondary)">or click to browse — PDF only, max 20 MB</p>
       </div>
+      <div id="upload-error" class="error-msg"></div>
       <p style="font-size:12px;color:var(--text-secondary);margin-top:12px;text-align:center">Files are processed securely and not stored after review.</p>
     </div>
   </div>
 
+  <!-- Analyzing screen -->
   <div id="s1b" class="screen">
     <div class="card" style="max-width:440px;margin:0 auto">
       <div class="thinking-wrap">
         <div class="pulse-ring"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#534AB7" stroke-width="1.5"><path d="M9 12h6m-3-3v6M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z" stroke-linecap="round"/></svg></div>
         <div style="width:100%">
           <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-            <p style="font-size:13px;color:var(--text-secondary)">Acme_NDA_draft.pdf</p>
+            <p style="font-size:13px;color:var(--text-secondary)" id="analyzing-filename">document.pdf</p>
             <p style="font-size:13px;color:#7F77DD">Analyzing…</p>
           </div>
-          <div class="progress-bar"><div class="progress-fill"></div></div>
+          <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
         </div>
         <div class="step-list">
-          <div class="step-item step-done"><div class="step-dot"></div>Document parsed — 14 clauses detected</div>
+          <div class="step-item step-done"><div class="step-dot"></div>Document received</div>
           <div class="step-item step-done"><div class="step-dot"></div>Loaded baseline: Standard NDA v2.1</div>
           <div class="step-item step-active"><div class="step-dot"></div>Comparing clause structure and language…</div>
           <div class="step-item step-wait"><div class="step-dot"></div>Generating risk flags</div>
@@ -167,139 +168,99 @@ body{font-family:var(--font-sans);background:var(--bg-tertiary);color:var(--text
     </div>
   </div>
 
+  <!-- Results screen -->
   <div id="s2" class="screen">
     <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:1.25rem;flex-wrap:wrap">
       <div>
-        <p style="font-size:17px;font-weight:500">Acme_NDA_draft.pdf</p>
-        <p style="font-size:12px;color:var(--text-secondary)">vs. Standard NDA v2.1 · 7 deltas found</p>
+        <p style="font-size:17px;font-weight:500" id="result-filename">document.pdf</p>
+        <p style="font-size:12px;color:var(--text-secondary)">vs. Standard NDA v2.1 · <span id="result-count">0</span> deltas found</p>
       </div>
       <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn" style="font-size:12px">Export PDF</button>
+        <button class="btn" style="font-size:12px" onclick="showScreen('s1')">New review</button>
       </div>
     </div>
     <div class="summary-bar">
-      <div class="stat-card"><div class="stat-n" style="color:#A32D2D" id="cnt-high">2</div><div class="stat-l">High risk</div></div>
-      <div class="stat-card"><div class="stat-n" style="color:#854F0B" id="cnt-med">3</div><div class="stat-l">Medium</div></div>
-      <div class="stat-card"><div class="stat-n" style="color:#3B6D11" id="cnt-low">2</div><div class="stat-l">Low / info</div></div>
-      <div class="stat-card"><div class="stat-n" id="cnt-pend">7</div><div class="stat-l">Pending</div></div>
+      <div class="stat-card"><div class="stat-n" style="color:#A32D2D" id="cnt-high">0</div><div class="stat-l">High risk</div></div>
+      <div class="stat-card"><div class="stat-n" style="color:#854F0B" id="cnt-med">0</div><div class="stat-l">Medium</div></div>
+      <div class="stat-card"><div class="stat-n" style="color:#3B6D11" id="cnt-low">0</div><div class="stat-l">Low / info</div></div>
+      <div class="stat-card"><div class="stat-n" id="cnt-pend">0</div><div class="stat-l">Pending</div></div>
     </div>
     <div id="flags"></div>
     <div class="action-footer">
       <button class="btn btn-success" onclick="bulkAct('approved')">Approve all remaining</button>
       <button class="btn btn-danger" onclick="bulkAct('rejected')">Reject all remaining</button>
-      <div style="flex:1"></div>
-      <button class="btn" style="border-color:#534AB7;color:#534AB7">Send for legal review</button>
     </div>
   </div>
 </div>
 
-<script>
-const FLAGS=[
-  {id:'f1',sev:'high',sevLabel:'High risk',clause:'§ 8.2',title:'Unlimited liability clause added',
-   desc:'The counterparty removed the liability cap of $500,000 and replaced it with unlimited liability exposure for both parties.',
-   rem:'Liability shall not exceed $500,000 in aggregate.',add:'Liability shall be unlimited for any breach of this agreement.',page:8,
-   docLines:[{t:'§ 8. LIMITATION OF LIABILITY',c:'section-head'},{t:'8.1  Neither party shall be liable for',c:'dim'},{t:'     indirect or consequential damages.',c:'dim'},{t:'8.2  [ORIGINAL]',c:'dim'},{t:'- Liability shall not exceed $500,000',c:'highlight-rem'},{t:'+ Liability shall be unlimited for',c:'highlight-add'},{t:'+ any breach of this agreement.',c:'highlight-add'},{t:'8.3  Indemnification obligations',c:'dim'},{t:'     survive termination.',c:'dim'}]},
-  {id:'f2',sev:'high',sevLabel:'High risk',clause:'§ 3.1',title:'Confidentiality term extended to perpetuity',
-   desc:"Original term was 3 years post-disclosure. Counterparty's draft removes the time limit, making obligations permanent.",
-   rem:'Obligations expire three (3) years after the Disclosure Date.',add:'Obligations shall survive indefinitely and shall not expire.',page:3,
-   docLines:[{t:'§ 3. TERM OF CONFIDENTIALITY',c:'section-head'},{t:'3.1  Duration of obligations:',c:'dim'},{t:'',c:'dim'},{t:'- Obligations expire three (3) years',c:'highlight-rem'},{t:'- after the Disclosure Date.',c:'highlight-rem'},{t:'+ Obligations shall survive indefinitely',c:'highlight-add'},{t:'+ and shall not expire.',c:'highlight-add'},{t:'',c:'dim'},{t:'3.2  Upon expiry, Recipient may…',c:'dim'}]},
-  {id:'f3',sev:'med',sevLabel:'Medium risk',clause:'§ 12.1',title:'Governing law changed to foreign jurisdiction',
-   desc:'Jurisdiction changed from Delaware, USA to England and Wales. This may increase litigation costs and complexity.',
-   rem:'Governed by the laws of the State of Delaware, USA.',add:'Governed by the laws of England and Wales.',page:12,
-   docLines:[{t:'§ 12. GOVERNING LAW',c:'section-head'},{t:'12.1 This Agreement shall be',c:'dim'},{t:'     construed under:',c:'dim'},{t:'',c:'dim'},{t:'- laws of the State of Delaware,',c:'highlight-rem'},{t:'- USA.',c:'highlight-rem'},{t:'+ laws of England and Wales.',c:'highlight-add'},{t:'',c:'dim'},{t:'12.2 Venue: courts of competent…',c:'dim'}]},
-  {id:'f4',sev:'med',sevLabel:'Medium risk',clause:'§ 5.3',title:'Non-compete scope broadened',
-   desc:'Non-compete territory expanded from the US to worldwide, and duration increased from 12 to 24 months.',
-   rem:'Non-compete applies within the United States for 12 months.',add:'Non-compete applies globally for a period of 24 months.',page:5,
-   docLines:[{t:'§ 5. NON-COMPETE',c:'section-head'},{t:'5.1  Recipient agrees not to…',c:'dim'},{t:'5.2  Exceptions apply to…',c:'dim'},{t:'5.3  Scope and duration:',c:'dim'},{t:'',c:'dim'},{t:'- United States, 12 months.',c:'highlight-rem'},{t:'+ Globally, 24 months.',c:'highlight-add'},{t:'',c:'dim'},{t:'5.4  Remedies for violation…',c:'dim'}]},
-  {id:'f5',sev:'med',sevLabel:'Medium risk',clause:'§ 13',title:'Arbitration clause removed',
-   desc:'The mandatory arbitration clause has been deleted entirely. Disputes will now default to litigation in court.',
-   rem:'Any dispute shall be resolved through binding arbitration (AAA rules).',add:'(clause removed)',page:13,
-   docLines:[{t:'§ 13. DISPUTE RESOLUTION',c:'section-head'},{t:'',c:'dim'},{t:'- Any dispute shall be resolved',c:'highlight-rem'},{t:'- through binding arbitration',c:'highlight-rem'},{t:'- pursuant to AAA rules.',c:'highlight-rem'},{t:'',c:'dim'},{t:'[clause removed in draft]',c:'dim'},{t:'',c:'dim'},{t:'§ 14. MISCELLANEOUS',c:'dim'}]},
-  {id:'f6',sev:'low',sevLabel:'Low risk',clause:'§ 9.1',title:'Notice period for termination shortened',
-   desc:'Written notice requirement reduced from 30 days to 14 days. Minor operational impact only.',
-   rem:'Termination requires 30 days written notice.',add:'Termination requires 14 days written notice.',page:9,
-   docLines:[{t:'§ 9. TERMINATION',c:'section-head'},{t:'9.1  Either party may terminate',c:'dim'},{t:'     this Agreement by providing:',c:'dim'},{t:'',c:'dim'},{t:'- 30 days written notice.',c:'highlight-rem'},{t:'+ 14 days written notice.',c:'highlight-add'},{t:'',c:'dim'},{t:'9.2  Upon termination, Recipient…',c:'dim'}]},
-  {id:'f7',sev:'info',sevLabel:'Info',clause:'§ 1',title:'Party name updated to legal entity',
-   desc:'Counterparty name corrected to full legal entity name. No substantive change to rights or obligations.',
-   rem:'Acme Inc.',add:'Acme Technologies, Inc. (a Delaware corporation)',page:1,
-   docLines:[{t:'§ 1. PARTIES',c:'section-head'},{t:'',c:'dim'},{t:'This Agreement is entered into',c:'dim'},{t:'by and between:',c:'dim'},{t:'',c:'dim'},{t:'- Acme Inc.',c:'highlight-rem'},{t:'+ Acme Technologies, Inc.',c:'highlight-add'},{t:'+ (a Delaware corporation)',c:'highlight-add'},{t:'',c:'dim'}]},
-];
+<script type="module">
+import { analyzeDocument } from './api.js';
+import { renderFlags, updateSummary, bulkAct as _bulkAct } from './flags.js';
 
-let pending=FLAGS.length;
+window.bulkAct = _bulkAct;
 
-function sevClass(s){return s==='high'?'sev-high':s==='med'?'sev-med':s==='low'?'sev-low':'sev-info';}
-
-function buildDocPreview(f){
-  return f.docLines.map(l=>`<div class="doc-line ${l.c}">${l.t||'&nbsp;'}</div>`).join('');
-}
-
-function renderFlags(){
-  document.getElementById('flags').innerHTML=FLAGS.map(f=>`
-    <div class="flag-row" id="${f.id}" data-status="pending">
-      <div class="flag-summary" onclick="toggleFlag('${f.id}')">
-        <svg class="flag-chevron" viewBox="0 0 16 16" stroke-width="1.5"><path d="M6 4l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <span class="severity ${sevClass(f.sev)}">${f.sevLabel}</span>
-        <span class="flag-title">${f.title}</span>
-        <span class="flag-clause">${f.clause}</span>
-        <span class="flag-status-dot" id="${f.id}-dot"></span>
-      </div>
-      <div class="flag-body">
-        <div class="flag-inner">
-          <div class="flag-detail">
-            <p class="flag-desc">${f.desc}</p>
-            <div class="flag-diff">
-              <div class="diff-rem">− ${f.rem}</div>
-              <div class="diff-add">+ ${f.add}</div>
-            </div>
-            <div class="flag-actions">
-              <button class="btn btn-success" id="${f.id}-app" onclick="flagAct('${f.id}','approved')">Approve</button>
-              <button class="btn btn-danger" id="${f.id}-rej" onclick="flagAct('${f.id}','rejected')">Reject</button>
-            </div>
-          </div>
-          <div class="doc-preview">
-            <div class="preview-label">Document location</div>
-            <div class="doc-page">${buildDocPreview(f)}</div>
-            <div class="preview-page-num">Page ${f.page}</div>
-          </div>
-        </div>
-      </div>
-    </div>`).join('');
-}
-
-function toggleFlag(id){
-  const el=document.getElementById(id);
-  const was=el.classList.contains('open');
-  document.querySelectorAll('.flag-row.open').forEach(r=>r.classList.remove('open'));
-  if(!was) el.classList.add('open');
-}
-
-function flagAct(id,status){
-  const el=document.getElementById(id);
-  if(el.dataset.status!=='pending') return;
-  el.dataset.status=status;
-  el.classList.remove('approved','rejected');
-  el.classList.add(status);
-  document.getElementById(id+'-app').disabled=true;
-  document.getElementById(id+'-rej').disabled=true;
-  pending=Math.max(0,pending-1);
-  document.getElementById('cnt-pend').textContent=pending;
-}
-
-function bulkAct(status){
-  FLAGS.forEach(f=>{const el=document.getElementById(f.id);if(el&&el.dataset.status==='pending')flagAct(f.id,status);});
-}
-
-function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
+window.showScreen = showScreen;
 
-function startThinking(){
+const fileInput = document.getElementById('file-input');
+const uploadError = document.getElementById('upload-error');
+
+// Allow drag-and-drop on the upload zone
+const uploadZone = document.querySelector('.upload-zone');
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.style.borderColor = '#7F77DD'; });
+uploadZone.addEventListener('dragleave', () => { uploadZone.style.borderColor = ''; });
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.style.borderColor = '';
+  const file = e.dataTransfer.files[0];
+  if (file) handleFile(file);
+});
+
+fileInput.addEventListener('change', () => {
+  if (fileInput.files[0]) handleFile(fileInput.files[0]);
+  fileInput.value = '';
+});
+
+async function handleFile(file) {
+  if (file.type !== 'application/pdf') {
+    showError('Only PDF files are accepted.');
+    return;
+  }
+  if (file.size > 20 * 1024 * 1024) {
+    showError('File exceeds 20 MB limit.');
+    return;
+  }
+
+  uploadError.style.display = 'none';
+  document.getElementById('analyzing-filename').textContent = file.name;
   showScreen('s1b');
-  setTimeout(()=>showScreen('s2'),3200);
+
+  // Reset progress animation
+  const fill = document.getElementById('progress-fill');
+  fill.style.animation = 'none';
+  fill.offsetHeight; // reflow
+  fill.style.animation = '';
+
+  try {
+    const result = await analyzeDocument(file);
+    document.getElementById('result-filename').textContent = result.filename || file.name;
+    document.getElementById('result-count').textContent = result.summary.total;
+    updateSummary(result.summary);
+    renderFlags(result.flags);
+    showScreen('s2');
+  } catch (err) {
+    showScreen('s1');
+    showError(err.message || 'Analysis failed. Please try again.');
+  }
 }
 
-renderFlags();
+function showError(msg) {
+  uploadError.textContent = msg;
+  uploadError.style.display = 'block';
+}
 </script>
 </body>
 </html>
