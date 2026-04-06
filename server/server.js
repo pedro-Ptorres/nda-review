@@ -7,10 +7,35 @@ import { fileURLToPath } from 'url';
 import { parsePdf } from './parser.js';
 import { runAnalysis } from './analyzer.js';
 import { applyRules } from './flagEngine.js';
+import { CONFIG_DIR } from './config.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Cache baselines at startup — restart server to pick up new files
+const BASELINES = {};
+async function loadBaselines() {
+  const types = { nda: 'baseline-nda.pdf', da: 'baseline-da.pdf' };
+  for (const [type, filename] of Object.entries(types)) {
+    const filePath = path.join(CONFIG_DIR, filename);
+    try {
+      BASELINES[type] = await parsePdf(filePath, { fromPath: true });
+      console.log(`[startup] Loaded baseline: ${filename}`);
+    } catch {
+      console.warn(`[startup] Baseline not found: ${filename} (skipping)`);
+    }
+  }
+  if (!BASELINES.nda) {
+    // Legacy fallback — support old baseline.pdf name
+    try {
+      BASELINES.nda = await parsePdf(path.join(CONFIG_DIR, 'baseline.pdf'), { fromPath: true });
+      console.log('[startup] Loaded baseline: baseline.pdf (legacy)');
+    } catch {
+      console.warn('[startup] No NDA baseline found. Upload will fail until baseline is added.');
+    }
+  }
+}
 
 app.use(cors());
 app.use(express.json());
@@ -25,15 +50,18 @@ const upload = multer({
   },
 });
 
-app.post('/api/analyze', upload.single('document'), async (req, res) => {
+app.post('/api/v1/analyze', upload.single('document'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No PDF file uploaded.' });
 
-    const uploadedText = await parsePdf(req.file.buffer);
-    const baselinePath = path.join(__dirname, '../config/baseline.pdf');
-    const baselineText = await parsePdf(baselinePath, { fromPath: true });
+    const docType = (req.body.docType || 'nda').toLowerCase();
+    const baselineText = BASELINES[docType];
+    if (!baselineText) {
+      return res.status(400).json({ error: `No baseline loaded for doc type: ${docType}` });
+    }
 
-    const rawFindings = await runAnalysis(uploadedText, baselineText);
+    const uploadedText = await parsePdf(req.file.buffer);
+    const rawFindings = await runAnalysis(uploadedText, baselineText, docType);
     const flags = applyRules(rawFindings);
 
     const summary = flags.reduce(
@@ -45,13 +73,15 @@ app.post('/api/analyze', upload.single('document'), async (req, res) => {
       { high: 0, medium: 0, low: 0, info: 0, total: 0 }
     );
 
-    res.json({ flags, summary, filename: req.file.originalname });
+    res.json({ flags, summary, filename: req.file.originalname, docType });
   } catch (err) {
-    console.error('[/api/analyze]', err.message);
+    console.error('[/api/v1/analyze]', err.message);
     res.status(500).json({ error: err.message || 'Analysis failed.' });
   }
 });
 
-app.get('/api/health', (req, res) => res.json({ status: 'ok', version: '1.0' }));
+app.get('/api/v1/health', (req, res) => res.json({ status: 'ok', version: '1.0' }));
 
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+loadBaselines().then(() => {
+  app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+});

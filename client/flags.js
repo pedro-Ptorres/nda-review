@@ -9,7 +9,7 @@ export function renderFlags(flags) {
 export function updateSummary(summary) {
   document.getElementById('cnt-high').textContent = summary.high ?? 0;
   document.getElementById('cnt-med').textContent = summary.medium ?? 0;
-  document.getElementById('cnt-low').textContent = summary.low ?? 0;
+  document.getElementById('cnt-low-info').textContent = (summary.low ?? 0) + (summary.info ?? 0);
   document.getElementById('cnt-pend').textContent = summary.total ?? 0;
 }
 

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>NDA Review</title>
+<title>legalHelper</title>
 <style>
 :root{
   --bg-primary:#ffffff;--bg-secondary:#f5f5f3;--bg-tertiary:#eeede9;
@@ -30,8 +30,10 @@ body{font-family:var(--font-sans);background:var(--bg-tertiary);color:var(--text
 .screen{display:none}
 .screen.active{display:block}
 .topbar{display:flex;align-items:center;gap:10px;margin-bottom:1.5rem}
-.logo{font-size:15px;font-weight:500;color:var(--text-primary)}
-.logo span{color:#7F77DD}
+.logo{font-size:15px;font-weight:600;color:var(--text-primary);line-height:1}
+.logo span{color:#0038FF}
+.by-appning{display:flex;align-items:center;gap:3px;margin-top:2px}
+.by-appning span{font-size:10px;font-weight:500;color:#0038FF;letter-spacing:.01em}
 .badge{font-size:11px;padding:3px 10px;border-radius:20px;background:var(--bg-secondary);color:var(--text-secondary);border:0.5px solid var(--border-t)}
 .btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--radius-md);font-size:13px;font-weight:500;cursor:pointer;border:0.5px solid var(--border-s);background:transparent;color:var(--text-primary);transition:background .15s;font-family:var(--font-sans)}
 .btn:hover{background:var(--bg-secondary)}
@@ -110,28 +112,54 @@ body{font-family:var(--font-sans);background:var(--bg-tertiary);color:var(--text
 .action-footer{display:flex;gap:8px;margin-top:1.25rem;padding-top:1.25rem;border-top:0.5px solid var(--border-t);flex-wrap:wrap}
 .avatar{width:28px;height:28px;border-radius:50%;background:#EEEDFE;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:#534AB7;flex-shrink:0}
 .error-msg{font-size:13px;color:var(--text-danger);background:var(--bg-danger);border:0.5px solid var(--border-danger);border-radius:var(--radius-md);padding:10px 14px;margin-top:12px;display:none}
+.screen-title{font-size:17px;font-weight:500;margin-bottom:4px}
+.screen-sub{font-size:13px;color:var(--text-secondary);margin-bottom:1.5rem}
+.screen-sub-sm{font-size:12px;color:var(--text-secondary)}
+.topbar-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+.result-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:1.25rem;flex-wrap:wrap}
+.result-title{font-size:17px;font-weight:500}
+.result-sub{font-size:12px;color:var(--text-secondary)}
+.doc-type-btn{flex:1;justify-content:center}
+.doc-type-btn.active{border-color:#7F77DD;color:#534AB7;background:#EEEDFE}
+.doc-type-btn.disabled{opacity:.45;cursor:default}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="topbar">
-    <div class="logo">nda<span>review</span></div>
-    <div class="badge">Beta</div>
-    <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-      <div class="avatar">AB</div>
+    <div style="display:flex;flex-direction:column">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="logo">legal<span>Helper</span></div>
+        <div class="badge">Beta</div>
+      </div>
+      <div class="by-appning">
+        <svg width="11" height="13" viewBox="0 0 22 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="appning-grad" x1="2" y1="0" x2="20" y2="26" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#7B2FFF"/>
+              <stop offset="100%" stop-color="#FFB400"/>
+            </linearGradient>
+          </defs>
+          <path d="M11 1 C11 1 2 18 2 20 C2 22.5 4 24.5 6.5 24.5 C8 24.5 9.5 23.5 10.2 22 L11 20.5 L11.8 22 C12.5 23.5 14 24.5 15.5 24.5 C18 24.5 20 22.5 20 20 C20 18 11 1 11 1 Z" fill="url(#appning-grad)" stroke="none"/>
+        </svg>
+        <span>by Appning</span>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <div class="avatar">PT</div>
     </div>
   </div>
 
   <!-- Upload screen -->
   <div id="s1" class="screen active">
     <div class="card" style="max-width:520px;margin:0 auto">
-      <p style="font-size:17px;font-weight:500;margin-bottom:4px">New document review</p>
-      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:1.5rem">Upload an NDA or DA to compare against your standard template.</p>
+      <p class="screen-title">New document review</p>
+      <p class="screen-sub">Upload an NDA or DA to compare against your standard template.</p>
       <div style="margin-bottom:1.25rem">
         <p class="section-label">What doc type are we reviewing?</p>
         <div style="display:flex;gap:8px">
-          <button class="btn" style="flex:1;justify-content:center;border-color:#7F77DD;color:#534AB7;background:#EEEDFE">Appning NDA</button>
-          <button class="btn" style="flex:1;justify-content:center;opacity:.45;cursor:default" disabled title="Coming in v2">Appning DA <span style="font-size:10px;margin-left:4px;color:var(--text-tertiary)">v2</span></button>
+          <button class="btn doc-type-btn active" data-doc-type="nda" id="btn-nda">Appning NDA</button>
+          <button class="btn doc-type-btn disabled" disabled title="Coming in v2" data-doc-type="da">Appning DA <span style="font-size:10px;margin-left:4px;color:var(--text-tertiary)">v2</span></button>
         </div>
       </div>
       <input type="file" id="file-input" accept="application/pdf" style="display:none"/>
@@ -141,7 +169,7 @@ body{font-family:var(--font-sans);background:var(--bg-tertiary);color:var(--text
         <p style="font-size:12px;color:var(--text-secondary)">or click to browse — PDF only, max 20 MB</p>
       </div>
       <div id="upload-error" class="error-msg"></div>
-      <p style="font-size:12px;color:var(--text-secondary);margin-top:12px;text-align:center">Files are processed securely and not stored after review.</p>
+      <p class="screen-sub-sm" style="margin-top:12px;text-align:center">Files are processed securely and not stored after review.</p>
     </div>
   </div>
 
@@ -170,19 +198,19 @@ body{font-family:var(--font-sans);background:var(--bg-tertiary);color:var(--text
 
   <!-- Results screen -->
   <div id="s2" class="screen">
-    <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:1.25rem;flex-wrap:wrap">
+    <div class="result-header">
       <div>
-        <p style="font-size:17px;font-weight:500" id="result-filename">document.pdf</p>
-        <p style="font-size:12px;color:var(--text-secondary)">vs. Standard NDA v2.1 · <span id="result-count">0</span> deltas found</p>
+        <p class="result-title" id="result-filename">document.pdf</p>
+        <p class="result-sub">vs. Appning NDA · <span id="result-count">0</span> deltas found</p>
       </div>
-      <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
+      <div class="topbar-actions">
         <button class="btn" style="font-size:12px" onclick="showScreen('s1')">New review</button>
       </div>
     </div>
     <div class="summary-bar">
       <div class="stat-card"><div class="stat-n" style="color:#A32D2D" id="cnt-high">0</div><div class="stat-l">High risk</div></div>
       <div class="stat-card"><div class="stat-n" style="color:#854F0B" id="cnt-med">0</div><div class="stat-l">Medium</div></div>
-      <div class="stat-card"><div class="stat-n" style="color:#3B6D11" id="cnt-low">0</div><div class="stat-l">Low / info</div></div>
+      <div class="stat-card"><div class="stat-n" style="color:#3B6D11" id="cnt-low-info">0</div><div class="stat-l">Low / info</div></div>
       <div class="stat-card"><div class="stat-n" id="cnt-pend">0</div><div class="stat-l">Pending</div></div>
     </div>
     <div id="flags"></div>
@@ -204,6 +232,16 @@ function showScreen(id) {
   document.getElementById(id).classList.add('active');
 }
 window.showScreen = showScreen;
+
+// Doc type selection
+let selectedDocType = 'nda';
+document.querySelectorAll('.doc-type-btn:not(.disabled)').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.doc-type-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedDocType = btn.dataset.docType;
+  });
+});
 
 const fileInput = document.getElementById('file-input');
 const uploadError = document.getElementById('upload-error');
@@ -245,7 +283,7 @@ async function handleFile(file) {
   fill.style.animation = '';
 
   try {
-    const result = await analyzeDocument(file);
+    const result = await analyzeDocument(file, selectedDocType);
     document.getElementById('result-filename').textContent = result.filename || file.name;
     document.getElementById('result-count').textContent = result.summary.total;
     updateSummary(result.summary);
